@@ -6,7 +6,7 @@
 //  Copyright (c) 2015年 DoExt. All rights reserved.
 //
 
-#define ThrID @"TencentQQ"
+#define ThrID @"tencent"
 
 #import "do_TencentQQ_App.h"
 #import "YZQQSDKCall.h"
