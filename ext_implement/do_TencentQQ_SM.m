@@ -209,6 +209,10 @@ typedef NS_ENUM(NSInteger, MessageType)
 {
     
 }
+- (void)tencentDidNotLogin:(BOOL)cancelled
+{
+    
+}
 /**
  *  登录成功后的回调
  */
