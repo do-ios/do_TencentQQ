@@ -13,8 +13,17 @@
 #import "doInvokeResult.h"
 #import "doJsonHelper.h"
 #import "YZQQSDKCall.h"
-
 #import <TencentOpenAPI/TencentOAuth.h>
+#import <TencentOpenAPI/QQApiInterfaceObject.h>
+#import <TencentOpenAPI/QQApiInterface.h>
+
+typedef NS_ENUM(NSInteger, MessageType)
+{
+    MessageTextType,
+    MessageImageType,
+    MessageMusicType,
+    MessageAppType
+};
 
 @interface do_TencentQQ_SM() <TencentSessionDelegate>
 @property(nonatomic,copy) NSString *callbackName;
@@ -105,8 +114,90 @@
     });
 }
 
+- (void)shareToQQ:(NSArray *)parms
+{
+    NSDictionary *_dictParas = [parms objectAtIndex:0];
+    self.scritEngine = [parms objectAtIndex:1];
+    //自己的代码实现
+//    NSString *appID = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
+    int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
+    NSString *title = [doJsonHelper GetOneText:_dictParas :@"title" :@""];
+    NSString *image = [doJsonHelper GetOneText:_dictParas :@"image" :@""];
+    NSString *url = [doJsonHelper GetOneText:_dictParas :@"url" :@""];
+    NSString *summary = [doJsonHelper GetOneText:_dictParas :@"summary" :@""];
+    NSString *audio = [doJsonHelper GetOneText:_dictParas :@"audio" :@""];
+    NSString *appName = [doJsonHelper GetOneText:_dictParas :@"appName" :@""];
+    QQApiObject *qqApiObject = [self messageToShare:type withTitle:title withImage:image withUrl:url withSummary:summary withAudio:audio withAppName:appName];
+    SendMessageToQQReq *req = [SendMessageToQQReq reqWithContent:qqApiObject];
+    QQApiSendResultCode sent = [QQApiInterface sendReq:req];
+    doInvokeResult *_invokeResult = [[doInvokeResult alloc] init:self.UniqueKey];
+    if (sent == EQQAPISENDSUCESS) {
+        [_invokeResult SetResultBoolean:YES];
+    }
+    else
+    {
+        [_invokeResult SetResultBoolean:NO];
+    }
+    self.callbackName = [parms objectAtIndex:2];
+    [self.scritEngine Callback:self.callbackName :_invokeResult];
+}
+
+- (QQApiObject *)messageToShare:(int)type withTitle:(NSString *)title withImage:(NSString *)image withUrl:(NSString *)url withSummary:(NSString *)summary withAudio:(NSString *)audio withAppName:(NSString *)appName
+{
+    QQApiObject *qqApiObject;
+    
+    switch (type) {
+        case MessageTextType:
+        {
+            qqApiObject = [QQApiTextObject objectWithText:summary];
+            qqApiObject.title = title;
+        }
+            break;
+        case MessageImageType:
+        {
+            qqApiObject = [QQApiImageObject objectWithData:nil previewImageData:nil title:title description:summary];
+        }
+            break;
+        case MessageMusicType:
+        {
+            qqApiObject = [QQApiAudioObject objectWithURL:[NSURL URLWithString:audio] title:title description:summary previewImageData:nil];
+        }
+            break;
+        case MessageAppType:
+        {
+            qqApiObject = [QQApiNewsObject objectWithURL:[NSURL URLWithString:url] title:title description:summary previewImageData:nil];
+        }
+            break;
+        default:
+            break;
+    }
+    return qqApiObject;
+}
+- (void)shareToQzone:(NSArray *)parms
+{
+    [self shareToQQ:parms];
+//    NSDictionary *_dictParas = [parms objectAtIndex:0];
+////    id<doIScriptEngine> _scritEngine = [parms objectAtIndex:1];
+//    //自己的代码实现
+//    NSString *appID = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
+//    int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
+//    NSString *title = [doJsonHelper GetOneText:_dictParas :@"title" :@""];
+//    NSString *image = [doJsonHelper GetOneText:_dictParas :@"image" :@""];
+//    NSString *url = [doJsonHelper GetOneText:_dictParas :@"url" :@""];
+//    NSString *summary = [doJsonHelper GetOneText:_dictParas :@"summary" :@""];
+//    NSString *audio = [doJsonHelper GetOneText:_dictParas :@"audio" :@""];
+//    NSString *appName = [doJsonHelper GetOneText:_dictParas :@"appName" :@""];
+//    NSString *_callbackName = [parms objectAtIndex:2];
+//    doInvokeResult *_invokeResult = [[doInvokeResult alloc] init];
+}
+
+
 #pragma -mark -
 #pragma -mark TencentSessionDelegate
+- (void)tencentDidLogout
+{
+    
+}
 /**
  *  登录时网络有问题的回调
  */

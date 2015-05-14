@@ -15,5 +15,7 @@
 - (void)getUserInfo:(NSArray *)parms;
 - (void)login:(NSArray *)parms;
 - (void)logout:(NSArray *)parms;
+- (void)shareToQQ:(NSArray *)parms;
+- (void)shareToQzone:(NSArray *)parms;
 
 @end
