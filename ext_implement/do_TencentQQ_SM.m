@@ -16,6 +16,8 @@
 #import <TencentOpenAPI/TencentOAuth.h>
 #import <TencentOpenAPI/QQApiInterfaceObject.h>
 #import <TencentOpenAPI/QQApiInterface.h>
+#import "doIOHelper.h"
+#import "doIPage.h"
 
 typedef NS_ENUM(NSInteger, MessageType)
 {
@@ -155,7 +157,9 @@ typedef NS_ENUM(NSInteger, MessageType)
             break;
         case MessageImageType:
         {
-            qqApiObject = [QQApiImageObject objectWithData:nil previewImageData:nil title:title description:summary];
+            NSString * imagePath = [doIOHelper GetLocalFileFullPath:_scritEngine.CurrentPage.CurrentApp :image];
+            NSData *imageData = [NSData dataWithContentsOfFile:imagePath];
+            qqApiObject = [QQApiImageObject objectWithData:imageData previewImageData:imageData title:title description:summary];
         }
             break;
         case MessageMusicType:
