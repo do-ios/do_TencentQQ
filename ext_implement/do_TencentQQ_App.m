@@ -11,6 +11,8 @@
 #import "do_TencentQQ_App.h"
 #import "YZQQSDKCall.h"
 #import <TencentOpenAPI/TencentOAuth.h>
+#import <TencentOpenAPI/QQApiInterface.h>
+#import "doScriptEngineHelper.h"
 
 @implementation do_TencentQQ_App
 @synthesize ThridPartyID;
@@ -49,6 +51,7 @@
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url fromThridParty:(NSString *)_id
 {
     if ([_id isEqualToString:ThrID]) {
+        [QQApiInterface handleOpenURL:url delegate:(id<QQApiInterfaceDelegate>)[doScriptEngineHelper ParseSingletonModule:nil :@"do_TencentQQ" ]];
         return [TencentOAuth HandleOpenURL:url];
     }
     return NO;
@@ -56,7 +59,9 @@
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation fromThridParty:(NSString *)_id
 {
     if ([_id isEqualToString:ThrID]) {
-        return [TencentOAuth HandleOpenURL:url];
+        BOOL qqApi = [QQApiInterface handleOpenURL:url delegate:(id<QQApiInterfaceDelegate>)[doScriptEngineHelper ParseSingletonModule:nil :@"do_TencentQQ" ]];
+        BOOL tencent = [TencentOAuth HandleOpenURL:url];
+        return qqApi || tencent;
     }
     return NO;
 }
