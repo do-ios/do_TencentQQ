@@ -27,7 +27,7 @@ typedef NS_ENUM(NSInteger, MessageType)
     MessageAppType
 };
 
-@interface do_TencentQQ_SM() <TencentSessionDelegate>
+@interface do_TencentQQ_SM() <TencentSessionDelegate,QQApiInterfaceDelegate>
 @property(nonatomic,copy) NSString *callbackName;
 @property(nonatomic,strong) id<doIScriptEngine> scritEngine;
 
@@ -120,6 +120,8 @@ typedef NS_ENUM(NSInteger, MessageType)
 {
     NSDictionary *_dictParas = [parms objectAtIndex:0];
     self.scritEngine = [parms objectAtIndex:1];
+    self.callbackName = [parms objectAtIndex:2];
+
     //自己的代码实现
 //    NSString *appID = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
     int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
@@ -131,18 +133,40 @@ typedef NS_ENUM(NSInteger, MessageType)
     NSString *appName = [doJsonHelper GetOneText:_dictParas :@"appName" :@""];
     QQApiObject *qqApiObject = [self messageToShare:type withTitle:title withImage:image withUrl:url withSummary:summary withAudio:audio withAppName:appName];
     SendMessageToQQReq *req = [SendMessageToQQReq reqWithContent:qqApiObject];
-    QQApiSendResultCode sent = [QQApiInterface sendReq:req];
-    doInvokeResult *_invokeResult = [[doInvokeResult alloc] init:self.UniqueKey];
-    if (sent == EQQAPISENDSUCESS) {
-        [_invokeResult SetResultBoolean:YES];
-    }
-    else
-    {
-        [_invokeResult SetResultBoolean:NO];
-    }
-    self.callbackName = [parms objectAtIndex:2];
-    [self.scritEngine Callback:self.callbackName :_invokeResult];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [QQApiInterface sendReq:req];
+    });
 }
+
+- (void)shareToQzone:(NSArray *)parms
+{
+    NSDictionary *_dictParas = [parms objectAtIndex:0];
+    self.scritEngine = [parms objectAtIndex:1];
+    self.callbackName = [parms objectAtIndex:2];
+    //自己的代码实现
+    //    NSString *appID = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
+    int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
+    NSString *title = [doJsonHelper GetOneText:_dictParas :@"title" :@""];
+    NSString *image = [doJsonHelper GetOneText:_dictParas :@"image" :@""];
+    NSString *url = [doJsonHelper GetOneText:_dictParas :@"url" :@""];
+    NSString *summary = [doJsonHelper GetOneText:_dictParas :@"summary" :@""];
+    NSString *audio = [doJsonHelper GetOneText:_dictParas :@"audio" :@""];
+    NSString *appName = [doJsonHelper GetOneText:_dictParas :@"appName" :@""];
+    QQApiObject *qqApiObject = [self messageToShareQQZone:type withTitle:title withImage:image withUrl:url withSummary:summary withAudio:audio withAppName:appName];
+    SendMessageToQQReq *req = [SendMessageToQQReq reqWithContent:qqApiObject];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [QQApiInterface SendReqToQZone:req];
+    });
+}
+- (QQApiObject *)messageToShareQQZone:(int)type withTitle:(NSString *)title withImage:(NSString *)image withUrl:(NSString *)url withSummary:(NSString *)summary withAudio:(NSString *)audio withAppName:(NSString *)appName
+{
+    QQApiObject *qqApiObject;
+    NSString * imagePath = [doIOHelper GetLocalFileFullPath:_scritEngine.CurrentPage.CurrentApp :image];
+    qqApiObject = [QQApiNewsObject objectWithURL:[NSURL URLWithString:url] title:title description:summary previewImageData:[NSData dataWithContentsOfFile:imagePath]];
+     [qqApiObject setCflag:kQQAPICtrlFlagQZoneShareOnStart];
+    return qqApiObject;
+}
+
 
 - (QQApiObject *)messageToShare:(int)type withTitle:(NSString *)title withImage:(NSString *)image withUrl:(NSString *)url withSummary:(NSString *)summary withAudio:(NSString *)audio withAppName:(NSString *)appName
 {
@@ -151,54 +175,53 @@ typedef NS_ENUM(NSInteger, MessageType)
     switch (type) {
         case MessageTextType:
         {
+            if(summary.length<=0){
+                [NSException raise:@"TencentQQ" format:@"QQ分享的summary的无效!",nil];
+            }
             qqApiObject = [QQApiTextObject objectWithText:summary];
             qqApiObject.title = title;
         }
-            break;
+        break;
         case MessageImageType:
         {
             NSString * imagePath = [doIOHelper GetLocalFileFullPath:_scritEngine.CurrentPage.CurrentApp :image];
             NSData *imageData = [NSData dataWithContentsOfFile:imagePath];
+            if(imageData == nil){
+                [NSException raise:@"TencentQQ" format:@"QQ分享的imageData的无效!",nil];
+            }
+            
             qqApiObject = [QQApiImageObject objectWithData:imageData previewImageData:imageData title:title description:summary];
         }
-            break;
+        break;
         case MessageMusicType:
         {
-            qqApiObject = [QQApiAudioObject objectWithURL:[NSURL URLWithString:audio] title:title description:summary previewImageData:nil];
+            if(audio.length<=0){
+                [NSException raise:@"TencentQQ" format:@"QQ分享的audio的无效!",nil];
+            }
+            NSString * imagePath = [doIOHelper GetLocalFileFullPath:_scritEngine.CurrentPage.CurrentApp :image];
+            NSData *imageData = [NSData dataWithContentsOfFile:imagePath];
+            qqApiObject = [QQApiAudioObject objectWithURL:[NSURL URLWithString:url] title:title description:summary previewImageData:imageData];
+            [(QQApiAudioObject *)qqApiObject setFlashURL:[NSURL URLWithString:audio]];
         }
-            break;
-        case MessageAppType:
-        {
-            qqApiObject = [QQApiNewsObject objectWithURL:[NSURL URLWithString:url] title:title description:summary previewImageData:nil];
-        }
-            break;
+        break;
+        //        case MessageAppType:
+        //        {
+        //            qqApiObject = [QQApiNewsObject objectWithURL:[NSURL URLWithString:url] title:title description:summary previewImageData:nil];
+        //        }
+        //            break;
         default:
-            break;
+        break;
     }
     return qqApiObject;
 }
-- (void)shareToQzone:(NSArray *)parms
-{
-    [self shareToQQ:parms];
-//    NSDictionary *_dictParas = [parms objectAtIndex:0];
-////    id<doIScriptEngine> _scritEngine = [parms objectAtIndex:1];
-//    //自己的代码实现
-//    NSString *appID = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
-//    int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
-//    NSString *title = [doJsonHelper GetOneText:_dictParas :@"title" :@""];
-//    NSString *image = [doJsonHelper GetOneText:_dictParas :@"image" :@""];
-//    NSString *url = [doJsonHelper GetOneText:_dictParas :@"url" :@""];
-//    NSString *summary = [doJsonHelper GetOneText:_dictParas :@"summary" :@""];
-//    NSString *audio = [doJsonHelper GetOneText:_dictParas :@"audio" :@""];
-//    NSString *appName = [doJsonHelper GetOneText:_dictParas :@"appName" :@""];
-//    NSString *_callbackName = [parms objectAtIndex:2];
-//    doInvokeResult *_invokeResult = [[doInvokeResult alloc] init];
-}
-
-
 #pragma -mark -
 #pragma -mark TencentSessionDelegate
 - (void)tencentDidLogout
+{
+    
+}
+
+- (void)tencentDidNotLogin:(BOOL)cancelled
 {
     
 }
@@ -225,7 +248,14 @@ typedef NS_ENUM(NSInteger, MessageType)
     NSString *ret = [[YZQQSDKCall getinstance].oauth passData][@"ret"];
     NSString *pay_token = [[YZQQSDKCall getinstance].oauth passData][@"pay_token"];
     NSString *msg = [[YZQQSDKCall getinstance].oauth passData][@"msg"];
-    NSString *resultStr = [NSString stringWithFormat:@"{ret:%@,pay_token:%@,openid:%@,expires_in:%@,msg:%@,access_token:%@}",ret,pay_token,openID,expirationDate,msg,accessToken];
+    NSMutableDictionary *resultDict = [NSMutableDictionary dictionary];
+    [resultDict setValue:ret forKey:@"ret"];
+    [resultDict setValue:pay_token forKey:@"pay_token"];
+    [resultDict setValue:openID forKey:@"openid"];
+    [resultDict setValue:expirationDate forKey:@"expires_in"];
+    [resultDict setValue:msg forKey:@"msg"];
+    [resultDict setValue:accessToken forKey:@"access_token"];
+    NSString *resultStr = [doJsonHelper ExportToText:resultDict :YES];
     doInvokeResult *_invokeResult = [[doInvokeResult alloc]init:self.UniqueKey];
     [_invokeResult SetResultText:resultStr];
     [self.scritEngine Callback:self.callbackName :_invokeResult];
@@ -249,5 +279,27 @@ typedef NS_ENUM(NSInteger, MessageType)
         [_invokeResult SetResultText:resultStr];
         [self.scritEngine Callback:self.callbackName :_invokeResult];
     }
+}
+/**
+ *  分享回调
+ *
+ *  @param resp <#resp description#>
+ */
+- (void)onResp:(QQBaseResp *)resp
+{
+    doInvokeResult *_invokeResult = [[doInvokeResult alloc] init:self.UniqueKey];
+    if ([resp.result isEqualToString:@"0"]) {
+        [_invokeResult SetResultBoolean:YES];
+    }
+    else
+    {
+        [_invokeResult SetResultBoolean:NO];
+    }
+    [self.scritEngine Callback:self.callbackName :_invokeResult];
+}
+
+- (void)onReq:(QQBaseReq *)req
+{
+    
 }
 @end
