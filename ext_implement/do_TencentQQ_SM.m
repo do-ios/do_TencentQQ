@@ -220,6 +220,11 @@ typedef NS_ENUM(NSInteger, MessageType)
 {
     
 }
+
+- (void)tencentDidNotLogin:(BOOL)cancelled
+{
+    
+}
 /**
  *  登录时网络有问题的回调
  */
@@ -246,7 +251,6 @@ typedef NS_ENUM(NSInteger, MessageType)
     [resultDict setValue:expirationDate forKey:@"expires_in"];
     [resultDict setValue:msg forKey:@"msg"];
     [resultDict setValue:accessToken forKey:@"access_token"];
-//    NSString *resultStr = [NSString stringWithFormat:@"{ret:%@,pay_token:%@,openid:%@,expires_in:%@,msg:%@,access_token:%@}",ret,pay_token,openID,expirationDate,msg,accessToken];
     NSString *resultStr = [doJsonHelper ExportToText:resultDict :YES];
     doInvokeResult *_invokeResult = [[doInvokeResult alloc]init:self.UniqueKey];
     [_invokeResult SetResultText:resultStr];
@@ -272,7 +276,11 @@ typedef NS_ENUM(NSInteger, MessageType)
         [self.scritEngine Callback:self.callbackName :_invokeResult];
     }
 }
-
+/**
+ *  分享回调
+ *
+ *  @param resp <#resp description#>
+ */
 - (void)onResp:(QQBaseResp *)resp
 {
     doInvokeResult *_invokeResult = [[doInvokeResult alloc] init:self.UniqueKey];
@@ -284,5 +292,10 @@ typedef NS_ENUM(NSInteger, MessageType)
         [_invokeResult SetResultBoolean:NO];
     }
     [self.scritEngine Callback:self.callbackName :_invokeResult];
+}
+
+- (void)onReq:(QQBaseReq *)req
+{
+    
 }
 @end
