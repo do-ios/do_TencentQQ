@@ -14,16 +14,16 @@
 #import <TencentOpenAPI/QQApiInterface.h>
 #import "doScriptEngineHelper.h"
 
+static do_TencentQQ_App *instance;
 @implementation do_TencentQQ_App
-@synthesize ThridPartyID;
-- (instancetype)init
+@synthesize OpenURLScheme;
++ (instancetype)Instance
 {
-    if (self = [super init]) {
-        self.ThridPartyID = ThrID;
+    if (instance == nil) {
+        instance =[[ do_TencentQQ_App alloc]init];
     }
-    return self;
+    return instance;
 }
-
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     return YES;
@@ -50,19 +50,13 @@
 }
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url fromThridParty:(NSString *)_id
 {
-    if ([_id isEqualToString:ThrID]) {
-        [QQApiInterface handleOpenURL:url delegate:(id<QQApiInterfaceDelegate>)[doScriptEngineHelper ParseSingletonModule:nil :@"do_TencentQQ" ]];
-        return [TencentOAuth HandleOpenURL:url];
-    }
-    return NO;
+    [QQApiInterface handleOpenURL:url delegate:(id<QQApiInterfaceDelegate>)[doScriptEngineHelper ParseSingletonModule:nil :@"do_TencentQQ" ]];
+    return [TencentOAuth HandleOpenURL:url];
 }
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation fromThridParty:(NSString *)_id
 {
-    if ([_id isEqualToString:ThrID]) {
-        BOOL qqApi = [QQApiInterface handleOpenURL:url delegate:(id<QQApiInterfaceDelegate>)[doScriptEngineHelper ParseSingletonModule:nil :@"do_TencentQQ" ]];
-        BOOL tencent = [TencentOAuth HandleOpenURL:url];
-        return qqApi || tencent;
-    }
-    return NO;
+    BOOL qqApi = [QQApiInterface handleOpenURL:url delegate:(id<QQApiInterfaceDelegate>)[doScriptEngineHelper ParseSingletonModule:nil :@"do_TencentQQ" ]];
+    BOOL tencent = [TencentOAuth HandleOpenURL:url];
+    return qqApi || tencent;
 }
 @end
