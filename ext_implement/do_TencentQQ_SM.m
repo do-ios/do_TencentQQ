@@ -123,7 +123,8 @@ typedef NS_ENUM(NSInteger, MessageType)
     self.callbackName = [parms objectAtIndex:2];
 
     //自己的代码实现
-//    NSString *appID = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
+    NSString *app_id = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
+    [YZQQSDKCall getinstance].oauth = [[TencentOAuth alloc]initWithAppId:app_id andDelegate:self];
     int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
     NSString *title = [doJsonHelper GetOneText:_dictParas :@"title" :@""];
     NSString *image = [doJsonHelper GetOneText:_dictParas :@"image" :@""];
@@ -144,7 +145,8 @@ typedef NS_ENUM(NSInteger, MessageType)
     self.scritEngine = [parms objectAtIndex:1];
     self.callbackName = [parms objectAtIndex:2];
     //自己的代码实现
-    //    NSString *appID = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
+    NSString *app_id = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
+    [YZQQSDKCall getinstance].oauth = [[TencentOAuth alloc]initWithAppId:app_id andDelegate:self];
     int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
     NSString *title = [doJsonHelper GetOneText:_dictParas :@"title" :@""];
     NSString *image = [doJsonHelper GetOneText:_dictParas :@"image" :@""];
