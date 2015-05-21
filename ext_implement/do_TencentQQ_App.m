@@ -24,36 +24,13 @@ static do_TencentQQ_App *instance;
     }
     return instance;
 }
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
-    return YES;
-}
-- (void)applicationWillResignActive:(UIApplication *)application
-{
-    
-}
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-    
-}
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
-    
-}
-- (void)applicationDidBecomeActive:(UIApplication *)application
-{
-    
-}
-- (void)applicationWillTerminate:(UIApplication *)application
-{
-    
-}
-- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url fromThridParty:(NSString *)_id
+
+- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url
 {
     [QQApiInterface handleOpenURL:url delegate:(id<QQApiInterfaceDelegate>)[doScriptEngineHelper ParseSingletonModule:nil :@"do_TencentQQ" ]];
     return [TencentOAuth HandleOpenURL:url];
 }
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation fromThridParty:(NSString *)_id
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
 {
     BOOL qqApi = [QQApiInterface handleOpenURL:url delegate:(id<QQApiInterfaceDelegate>)[doScriptEngineHelper ParseSingletonModule:nil :@"do_TencentQQ" ]];
     BOOL tencent = [TencentOAuth HandleOpenURL:url];
