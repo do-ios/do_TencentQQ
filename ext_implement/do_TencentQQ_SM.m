@@ -18,6 +18,7 @@
 #import <TencentOpenAPI/QQApiInterface.h>
 #import "doIOHelper.h"
 #import "doIPage.h"
+#import "do_TencentQQ_App.h"
 
 typedef NS_ENUM(NSInteger, MessageType)
 {
@@ -86,6 +87,8 @@ typedef NS_ENUM(NSInteger, MessageType)
     
     self.callbackName = [parms objectAtIndex:2];
     NSString *app_id = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
+    do_TencentQQ_App *tencentApp = [do_TencentQQ_App Instance];
+    tencentApp.OpenURLScheme = app_id;
     [YZQQSDKCall getinstance].oauth = [[TencentOAuth alloc]initWithAppId:app_id andDelegate:self];
     NSArray* permissions = [NSArray arrayWithObjects:
                             kOPEN_PERMISSION_GET_USER_INFO,

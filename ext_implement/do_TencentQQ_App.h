@@ -11,5 +11,5 @@
 #import "doIAppDelegate.h"
 
 @interface do_TencentQQ_App : NSObject<doIAppDelegate>
-
++ (instancetype )Instance;
 @end
