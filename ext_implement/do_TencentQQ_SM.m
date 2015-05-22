@@ -127,6 +127,10 @@ typedef NS_ENUM(NSInteger, MessageType)
 
     //自己的代码实现
     NSString *app_id = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
+    if(app_id.length<=0){
+        [NSException raise:@"TencentQQ" format:@"QQ分享的app_id的无效!",nil];
+    }
+
     [YZQQSDKCall getinstance].oauth = [[TencentOAuth alloc]initWithAppId:app_id andDelegate:self];
     int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
     NSString *title = [doJsonHelper GetOneText:_dictParas :@"title" :@""];
@@ -149,6 +153,10 @@ typedef NS_ENUM(NSInteger, MessageType)
     self.callbackName = [parms objectAtIndex:2];
     //自己的代码实现
     NSString *app_id = [doJsonHelper GetOneText:_dictParas :@"appId" :@""];
+    if(app_id.length<=0){
+        [NSException raise:@"TencentQQ" format:@"QQ分享的app_id的无效!",nil];
+    }
+
     [YZQQSDKCall getinstance].oauth = [[TencentOAuth alloc]initWithAppId:app_id andDelegate:self];
     int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
     NSString *title = [doJsonHelper GetOneText:_dictParas :@"title" :@""];
@@ -181,7 +189,8 @@ typedef NS_ENUM(NSInteger, MessageType)
         case MessageTextType:
         {
             if(summary.length<=0){
-                [NSException raise:@"TencentQQ" format:@"QQ分享的summary的无效!",nil];
+                summary = @"share";
+//                [NSException raise:@"TencentQQ" format:@"QQ分享的summary的无效!",nil];
             }
             qqApiObject = [QQApiTextObject objectWithText:summary];
             qqApiObject.title = title;
