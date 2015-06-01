@@ -130,7 +130,8 @@ typedef NS_ENUM(NSInteger, MessageType)
     if(app_id.length<=0){
         [NSException raise:@"TencentQQ" format:@"QQ分享的app_id的无效!",nil];
     }
-
+    do_TencentQQ_App *tencentApp = [do_TencentQQ_App Instance];
+    tencentApp.OpenURLScheme = [NSString stringWithFormat:@"tencent%@",app_id];
     [YZQQSDKCall getinstance].oauth = [[TencentOAuth alloc]initWithAppId:app_id andDelegate:self];
     int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
     NSString *title = [doJsonHelper GetOneText:_dictParas :@"title" :@""];
@@ -156,7 +157,8 @@ typedef NS_ENUM(NSInteger, MessageType)
     if(app_id.length<=0){
         [NSException raise:@"TencentQQ" format:@"QQ分享的app_id的无效!",nil];
     }
-
+    do_TencentQQ_App *tencentApp = [do_TencentQQ_App Instance];
+    tencentApp.OpenURLScheme = [NSString stringWithFormat:@"tencent%@",app_id];
     [YZQQSDKCall getinstance].oauth = [[TencentOAuth alloc]initWithAppId:app_id andDelegate:self];
     int type = [doJsonHelper GetOneInteger:_dictParas :@"type" :-1];
     NSString *title = [doJsonHelper GetOneText:_dictParas :@"title" :@""];
@@ -175,6 +177,10 @@ typedef NS_ENUM(NSInteger, MessageType)
 {
     QQApiObject *qqApiObject;
     NSString * imagePath = [doIOHelper GetLocalFileFullPath:_scritEngine.CurrentPage.CurrentApp :image];
+    if(title.length <= 0)
+    {
+        title = @"Share Title";
+    }
     qqApiObject = [QQApiNewsObject objectWithURL:[NSURL URLWithString:url] title:title description:summary previewImageData:[NSData dataWithContentsOfFile:imagePath]];
      [qqApiObject setCflag:kQQAPICtrlFlagQZoneShareOnStart];
     return qqApiObject;
