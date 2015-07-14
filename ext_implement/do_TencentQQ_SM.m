@@ -198,8 +198,13 @@ typedef NS_ENUM(NSInteger, MessageType)
                 summary = @"share";
 //                [NSException raise:@"TencentQQ" format:@"QQ分享的summary的无效!",nil];
             }
-            qqApiObject = [QQApiTextObject objectWithText:summary];
-            qqApiObject.title = title;
+            if (url.length <= 0) {
+                [NSException raise:@"TencentQQ" format:@"QQ分享的Url的无效!",nil];
+
+            }
+            qqApiObject = [QQApiNewsObject objectWithURL:[NSURL URLWithString:url] title:title description:summary previewImageData:[NSData dataWithContentsOfFile:image]];
+//            qqApiObject = [QQApiTextObject objectWithText:summary];
+//            qqApiObject.title = title;
         }
         break;
         case MessageImageType:
