@@ -202,9 +202,9 @@ typedef NS_ENUM(NSInteger, MessageType)
                 [NSException raise:@"TencentQQ" format:@"QQ分享的Url的无效!",nil];
 
             }
-            qqApiObject = [QQApiNewsObject objectWithURL:[NSURL URLWithString:url] title:title description:summary previewImageData:[NSData dataWithContentsOfFile:image]];
-//            qqApiObject = [QQApiTextObject objectWithText:summary];
-//            qqApiObject.title = title;
+            NSString * imagePath = [doIOHelper GetLocalFileFullPath:_scritEngine.CurrentPage.CurrentApp :image];
+            NSData *imageData = [NSData dataWithContentsOfFile:imagePath];
+            qqApiObject = [QQApiNewsObject objectWithURL:[NSURL URLWithString:url] title:title description:summary previewImageData:imageData];
         }
         break;
         case MessageImageType:
