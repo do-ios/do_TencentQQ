@@ -28,13 +28,16 @@ typedef NS_ENUM(NSInteger, MessageType)
     MessageAppType
 };
 
-@interface do_TencentQQ_SM() <TencentSessionDelegate,QQApiInterfaceDelegate>
+@interface do_TencentQQ_SM() <QQApiInterfaceDelegate,TencentSessionDelegate>
 @property(nonatomic,copy) NSString *callbackName;
 @property(nonatomic,strong) id<doIScriptEngine> scritEngine;
 
 @end
 
 @implementation do_TencentQQ_SM
+{
+    BOOL _isLogin;
+}
 #pragma mark -
 #pragma mark - 同步异步方法的实现
 /*
@@ -67,7 +70,14 @@ typedef NS_ENUM(NSInteger, MessageType)
 //同步
 - (void)logout:(NSArray *)parms
 {
+    self.scritEngine  = [parms objectAtIndex:1];
     //自己的代码实现
+    self.callbackName = [parms objectAtIndex:2];
+    if (!_isLogin) {//没有登录一次，不走登出的回调，所以在这处理一下
+        doInvokeResult *_invokeResult = [[doInvokeResult alloc]init:self.UniqueKey];
+        [_invokeResult SetResultBoolean:YES];
+        [self.scritEngine Callback:self.callbackName :_invokeResult];
+    }
     [[YZQQSDKCall getinstance].oauth logout:self];
 }
 //异步
@@ -90,6 +100,7 @@ typedef NS_ENUM(NSInteger, MessageType)
     do_TencentQQ_App *tencentApp = [do_TencentQQ_App Instance];
     tencentApp.OpenURLScheme = [NSString stringWithFormat:@"tencent%@",app_id];
     [YZQQSDKCall getinstance].oauth = [[TencentOAuth alloc]initWithAppId:app_id andDelegate:self];
+    _isLogin = YES;
     NSArray* permissions = [NSArray arrayWithObjects:
                             kOPEN_PERMISSION_GET_USER_INFO,
                             kOPEN_PERMISSION_GET_SIMPLE_USER_INFO,
@@ -243,7 +254,10 @@ typedef NS_ENUM(NSInteger, MessageType)
 #pragma -mark TencentSessionDelegate
 - (void)tencentDidLogout
 {
-    
+    BOOL result = [[YZQQSDKCall getinstance].oauth isSessionValid];
+    doInvokeResult *_invokeResult = [[doInvokeResult alloc]init:self.UniqueKey];
+    [_invokeResult SetResultBoolean:!result];
+    [self.scritEngine Callback:self.callbackName :_invokeResult];
 }
 
 - (void)tencentDidNotLogin:(BOOL)cancelled
