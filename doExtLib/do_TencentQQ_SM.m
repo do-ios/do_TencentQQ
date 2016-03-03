@@ -31,7 +31,7 @@ typedef NS_ENUM(NSInteger, MessageType)
 @interface do_TencentQQ_SM() <QQApiInterfaceDelegate,TencentSessionDelegate>
 @property(nonatomic,copy) NSString *callbackName;
 @property(nonatomic,strong) id<doIScriptEngine> scritEngine;
-
+- (void)handleSendResult:(QQApiSendResultCode)sendResult;
 @end
 
 @implementation do_TencentQQ_SM
@@ -105,25 +105,16 @@ typedef NS_ENUM(NSInteger, MessageType)
                             kOPEN_PERMISSION_GET_USER_INFO,
                             kOPEN_PERMISSION_GET_SIMPLE_USER_INFO,
                             kOPEN_PERMISSION_ADD_ALBUM,
-                            kOPEN_PERMISSION_ADD_IDOL,
                             kOPEN_PERMISSION_ADD_ONE_BLOG,
-                            kOPEN_PERMISSION_ADD_PIC_T,
                             kOPEN_PERMISSION_ADD_SHARE,
                             kOPEN_PERMISSION_ADD_TOPIC,
                             kOPEN_PERMISSION_CHECK_PAGE_FANS,
-                            kOPEN_PERMISSION_DEL_IDOL,
-                            kOPEN_PERMISSION_DEL_T,
-                            kOPEN_PERMISSION_GET_FANSLIST,
-                            kOPEN_PERMISSION_GET_IDOLLIST,
                             kOPEN_PERMISSION_GET_INFO,
                             kOPEN_PERMISSION_GET_OTHER_INFO,
-                            kOPEN_PERMISSION_GET_REPOST_LIST,
                             kOPEN_PERMISSION_LIST_ALBUM,
                             kOPEN_PERMISSION_UPLOAD_PIC,
                             kOPEN_PERMISSION_GET_VIP_INFO,
                             kOPEN_PERMISSION_GET_VIP_RICH_INFO,
-                            kOPEN_PERMISSION_GET_INTIMATE_FRIENDS_WEIBO,
-                            kOPEN_PERMISSION_MATCH_NICK_TIPS_WEIBO,
                             nil];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[YZQQSDKCall getinstance].oauth authorize:permissions inSafari:NO];
@@ -154,7 +145,9 @@ typedef NS_ENUM(NSInteger, MessageType)
     QQApiObject *qqApiObject = [self messageToShare:type withTitle:title withImage:image withUrl:url withSummary:summary withAudio:audio withAppName:appName];
     SendMessageToQQReq *req = [SendMessageToQQReq reqWithContent:qqApiObject];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [QQApiInterface sendReq:req];
+//        [QQApiInterface sendReq:req];
+        QQApiSendResultCode sent = [QQApiInterface sendReq:req];
+        [self handleSendResult:sent];
     });
 }
 
@@ -181,7 +174,8 @@ typedef NS_ENUM(NSInteger, MessageType)
     QQApiObject *qqApiObject = [self messageToShareQQZone:type withTitle:title withImage:image withUrl:url withSummary:summary withAudio:audio withAppName:appName];
     SendMessageToQQReq *req = [SendMessageToQQReq reqWithContent:qqApiObject];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [QQApiInterface SendReqToQZone:req];
+        QQApiSendResultCode sent = [QQApiInterface sendReq:req];
+        [self handleSendResult:sent];
     });
 }
 - (QQApiObject *)messageToShareQQZone:(int)type withTitle:(NSString *)title withImage:(NSString *)image withUrl:(NSString *)url withSummary:(NSString *)summary withAudio:(NSString *)audio withAppName:(NSString *)appName
@@ -336,5 +330,53 @@ typedef NS_ENUM(NSInteger, MessageType)
 - (void)onReq:(QQBaseReq *)req
 {
     
+}
+
+- (void)handleSendResult:(QQApiSendResultCode)sendResult
+{
+    switch (sendResult)
+    {
+        case EQQAPIAPPNOTREGISTED:
+        {
+            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"App未注册" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
+            [msgbox show];
+            
+            break;
+        }
+        case EQQAPIMESSAGECONTENTINVALID:
+        case EQQAPIMESSAGECONTENTNULL:
+        case EQQAPIMESSAGETYPEINVALID:
+        {
+            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"发送参数错误" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
+            [msgbox show];
+            
+            break;
+        }
+        case EQQAPIQQNOTINSTALLED:
+        {
+            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"未安装手Q" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
+            [msgbox show];
+            
+            break;
+        }
+        case EQQAPIQQNOTSUPPORTAPI:
+        {
+            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"API接口不支持" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
+            [msgbox show];
+            
+            break;
+        }
+        case EQQAPISENDFAILD:
+        {
+            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"发送失败" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
+            [msgbox show];
+            
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
 }
 @end
