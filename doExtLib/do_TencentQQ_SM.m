@@ -14,8 +14,10 @@
 #import "doJsonHelper.h"
 #import "YZQQSDKCall.h"
 #import <TencentOpenAPI/TencentOAuth.h>
+#import <TencentOpenAPI/TencentOAuthObject.h>
 #import <TencentOpenAPI/QQApiInterfaceObject.h>
 #import <TencentOpenAPI/QQApiInterface.h>
+#import <TencentOpenAPI/TencentApiInterface.h>
 #import "doIOHelper.h"
 #import "doIPage.h"
 #import "do_TencentQQ_App.h"
